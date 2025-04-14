@@ -1,60 +1,48 @@
-import db_handler
+#import db_handler
+#from db_handler import isAdmin
+import threading
+import sys
+
 total_logs = ""
-
-
-
-
-"""
-------------------------------------
-MAIN THREAD: FOR CONNECTION INITIATION
-------------------------------------
-"""
-
-
-from socket import *
-serverPort = 12000
-serverSocket = socket(AF_INET,SOCK_STREAM)
-serverSocket.bind(('',serverPort))
-serverSocket.listen(1)
-
-print('The server is ready to receive')
-while True:
-    clientSocket, addr = serverSocket.accept()
-
-    
-    clientSocket.close()
-
-serverSocket.close()
-
-
 
 """
 ------------------------------------
 MANY THREADS: FOR SERVICE HANDLING
 ------------------------------------
 """
+def clientHandler(clientSocket, addr):
 
-# session_key = None
+    #TEMPORARY VARIABLE
+    isAdmin = 0
 
-# ```python
-# While True:
-#     choice = receive(...)
-#     if choice == "UploadFiles":
-#         UploadFiles(...)
-#     ...
-#     elif choice == "Case i":
-#     caseI(...)
-#     ...
-#     else:
-#     closeConnection(...)
-#     break;
-# ```
+    clientSocket.send(str(isAdmin).encode())
+    print("The server has sent ", isAdmin)
+    while True:
+
+        choice = clientSocket.recv(1024).decode()
+
+        if choice == "UploadFiles":
+            print("files will be uploaded here")
+        elif choice == "DownloadFiles":
+            print("Files will be downloaded")
+        elif choice == "ListFiles":
+            print("The files will be displayed")
+        elif choice == "DeleteFiles":
+            print("The files will be deleted")
+        elif choice == "CheckLogs":
+            print("The log will be displayed")
+        else:
+            print("Invalid Input")
+
 
 """
 ------------------------------------
 HELPER METHODS
 ------------------------------------
 """
+
+
+
 
 # def uploadFiles(...):
 
@@ -67,5 +55,32 @@ HELPER METHODS
 
 
 #def fileIntegrityCheck(...):
+
+"""
+------------------------------------
+MAIN THREAD: FOR CONNECTION INITIATION
+------------------------------------
+"""
+
+from socket import *
+
+serverPort = 12345
+serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.bind(('', serverPort))
+serverSocket.listen(1)
+
+print('The server is ready to receive')
+try:
+    while True:
+        clientSocket, addr = serverSocket.accept()
+        print(f"Connection from {addr}")
+
+        thread = threading.Thread(target= clientHandler, args=(clientSocket, addr))
+        thread.start()
+
+except KeyboardInterrupt:
+    print("\nServer is shutting down...")
+finally:
+    serverSocket.close()
 
 
