@@ -9,7 +9,7 @@ def createConnection():
         connectioner = mysql.connector.connect(
             host='127.0.0.1',
             user='root',
-            password='gasanchik',
+            password='Iloveaustralia2',
             database='Storage'
         )
         print("Connection to MySQL DB successful")
