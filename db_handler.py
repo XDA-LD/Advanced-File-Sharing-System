@@ -21,30 +21,41 @@ def create_connection():
 
 def isAdmin(connection: pymysql.connections.Connection, userName, passWord):
     # returns boolean , true: admin, false: normal user
-    with connection.cursor() as cursor:
-        sql = "SELECT is_admin FROM Users WHERE user_name = %s and user_password = %s"
-        cursor.execute(sql, (userName, passWord))
-        result = cursor.fetchone()[0]
-        return True if result == 1 else False
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT is_admin FROM Users WHERE user_name = %s and user_password = %s"
+            cursor.execute(sql, (userName, passWord))
+            result = cursor.fetchone()[0]
+            return True if result == 1 else False
+    except Error as e:
+        print(f"Error in isAdmin : Error {e}")
+        return
 
 
 def userExists(connection: pymysql.connections.Connection, userName, passWord):
     # checks if user is in Database
-    with connection.cursor() as cursor:
-        sql = "SELECT EXISTS( SELECT * FROM Users WHERE user_name = %s and user_password = %s)"
-        cursor.execute(sql, (userName, passWord))
-        result = cursor.fetchone()[0]
-        return True if result == 1 else False
-
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT EXISTS( SELECT * FROM Users WHERE user_name = %s and user_password = %s)"
+            cursor.execute(sql, (userName, passWord))
+            result = cursor.fetchone()[0]
+            return True if result == 1 else False
+    except Error as e:
+        print(f"Error in userExists : Error {e}")
+        return False
 
 def userCreateAccount(connection: pymysql.connections.Connection, userName, passWord):
-    # creates account if user doesnt exist
-    with connection.cursor() as cursor:
-        sql = "INSERT INTO Users(user_name, user_password,is_admin) VALUES (%s,%s,%s)"
-        cursor.execute(sql, (userName, passWord, "0"))
-        # print("created user")
-        return
 
+   try: # creates account if user doesnt exist
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO Users(user_name, user_password,is_admin) VALUES (%s,%s,%s)"
+            cursor.execute(sql, (userName, passWord, "0"))
+            connection.commit()
+            # print("created user")
+            return
+   except Error as e:
+       print(f"Error in userCreateAccount : Error {e}")
+       return
 
 def userCheck(connection: pymysql.connections.Connection, userName, passWord):
     if userExists(connection, userName, passWord):
@@ -54,55 +65,87 @@ def userCheck(connection: pymysql.connections.Connection, userName, passWord):
         print("User created")
 
 
-def promptUser():
-    userName = input("Please enter a username:\n")
-    password = input("Please enter the password:\n")
-    return userName, password
 
+def deleteUser(connection:pymysql.connections.Connection, userName, passWord):
+    if isAdmin(connection,userName,passWord):
+        print("Cant delete an Administrator.")
+
+    else:
+        try:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM Users WHERE user_name = %s AND user_password = %s"
+                cursor.execute(sql,(userName,passWord))
+                connection.commit()
+                print("User deleted")
+        except Error as e:
+            print(f"Error in deleteUser : Error {e}")
 
 def listAllFiles(connection: pymysql.connections.Connection):
-    with connection.cursor() as cursor:
-        sql = "SELECT file_name FROM Files"
-        cursor.execute(sql)
-        result = cursor.fetchall()
-        return result
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT file_name FROM Files"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            return result
+    except Error as e:
+        print(f"Error in listAllFiles: Error {e}")
 
-
-def checkFileExists(connection: pymysql.connections.Connection, fileName):
-    with connection.cursor() as cursor:
-        sql = "SELECT EXISTS ( SELECT * FROM Files WHERE file_name = %s)"
-        cursor.execute(sql, (fileName))
-        result = cursor.fetchone()[0]
-        return True if result == 1 else False
-
+def checkFileExists(connection: pymysql.connections.Connection, fileName, fileVersion):
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT EXISTS ( SELECT * FROM Files WHERE file_name = %s AND file_version = %s)"
+            cursor.execute(sql, (fileName,fileVersion))
+            result = cursor.fetchone()[0]
+            return True if result == 1 else False
+    except Error as e:
+        print(f"Error in checkFilesExists: Error {e}")
+        return False
 
 def getFileVersion(connection: pymysql.connections.Connection, fileName):
     # used only if file already exists
-    with connection.cursor() as cursor:
-        sql = "SELECT file_version FROM Files WHERE file_name = %s"
-        cursor.execute(sql, (fileName))
-        result = cursor.fetchone()
-        return result
+    try:
+
+        with connection.cursor() as cursor:
+            sql = "SELECT file_version FROM Files WHERE file_name = %s"
+            cursor.execute(sql, (fileName,))
+            result = cursor.fetchone()[0]
+            return result
+    except Error as e :
+        print(f"Error in getFileVersion : Error {e}")
 
 
-def postFile(connection: pymysql.connections.Connection, fileName, fileVersion, file, checksumType, checkSum,
-             WillOvewrite):
-    with connection.cursor() as cursor:
-        sql = ("INSERT INTO FILES(file_name, file_data, file_version, file_checksum_type, file_checksum_value) VALUES"
-               "%s,%,%s,%s,%s")
-        cursor.execute(sql, (fileName, file, fileVersion, checksumType, checkSum))
-        return
+
+def getFileDir(connection: pymysql.connections.Connection, fileName, fileVersion):
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT file_path FROM Files WHERE file_name = %s AND file_version = %s"
+            cursor.execute(sql, (fileName,fileVersion))
+            result = cursor.fetchone()[0]
+            return result
+    except Error as e:
+        print(f"Error in getFileDir : Error {e}")
+
+def addfileDir(connection:pymysql.connections.Connection, fileName, fileVersion, fileDir):
+    try:
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO Files(file_name, file_path, file_version) VALUES (%s,%s,%s)"
+            cursor.execute(sql, (fileName, fileDir, fileVersion))
+            cursor.fetchone()
+            connection.commit()
+    except Error as e:
+            print(f"Error in addFileDir : Error {e}")
 
 
-def uploadFile(connection: pymysql.connections.Connection, fileName, fileData, checkSum, exists, willOvewrite):
-    checkSumType = "MD5"
-    if exists:
-        ver = getFileVersion(connection, fileName)
-        postFile(connection, fileName, ver, fileData, checkSumType, checkSum, willOvewrite)
-    else:
-        postFile(connection, fileName, 0, fileData, checkSumType, checkSum, willOvewrite)
+
+def promptuUser():
+    user = input("Username: ")
+    passw = input("Password: ")
+    return user,passw
 
 
 connections = create_connection()
+user , passw = promptuUser()
+
+
 
 
