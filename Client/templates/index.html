@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="user-info">
+    <div>Logged in as <strong>{{ username }}</strong></div>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+</div>
+
+<div class="upload-zone">
+    <h4 class="mb-3">Upload Files</h4>
+    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input class="form-control" type="file" id="formFile" name="file">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+</div>
+
+<div class="file-container">
+    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+        <h4 class="mb-0">Your Files</h4>
+        {# Add margin-left: auto to push refresh button to the right #}
+        <a href="/" style="margin-left: auto;" class="btn btn-primary btn-sm">Refresh</a>
+    </div>
+
+    {% if files %}
+        <div class="table-responsive"> {# Make table scrollable on small screens #}
+            <table class="table table-striped table-hover table-sm"> {# table-sm for less padding #}
+                <thead>
+                    <tr>
+                        <th scope="col">Filename</th>
+                        <th scope="col" style="text-align: right;">Size</th> {# Align size right #}
+                        <th scope="col">Last Modified</th>
+                        <th scope="col" style="text-align: center;">Actions</th> {# Center actions #}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file_info in files %} {# Iterate through the list of dictionaries #}
+                        <tr>
+                            {# Use word-break for long filenames #}
+                            <td style="word-break: break-all;">{{ file_info.name }}</td>
+                            <td style="text-align: right;">
+                                {# Basic size formatting (can be improved with Jinja filters or JS) #}
+                                {% if file_info.size.isdigit() %}
+                                    {% set size_bytes = file_info.size | int %}
+                                    {% if size_bytes < 1024 %}
+                                        {{ size_bytes }} B
+                                    {% elif size_bytes < 1024 * 1024 %}
+                                        {{ "%.1f"|format(size_bytes / 1024) }} KB {# Show 1 decimal place #}
+                                    {% elif size_bytes < 1024 * 1024 * 1024 %}
+                                        {{ "%.1f"|format(size_bytes / (1024 * 1024)) }} MB
+                                    {% else %}
+                                         {{ "%.1f"|format(size_bytes / (1024 * 1024 * 1024)) }} GB
+                                    {% endif %}
+                                {% else %}
+                                    {{ file_info.size }} {# Display N/A or Error #}
+                                {% endif %}
+                            </td>
+                            <td>{{ file_info.timestamp }}</td>
+                            <td style="text-align: center; white-space: nowrap;"> {# Prevent buttons wrapping #}
+                                {# Actions remain the same, use file_info.name #}
+                                <a href="{{ url_for('download_file', filename=file_info.name) }}" class="btn btn-success btn-sm me-1">Download</a> {# Add margin #}
+                                <a href="{{ url_for('delete_file', filename=file_info.name) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete {{ file_info.name }}?')">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">No files uploaded yet, or error retrieving file list.</p>
+    {% endif %}
+</div>
+{% endblock %}
