@@ -10,11 +10,10 @@ PRIMARY KEY (user_name, user_password)
 );
 
 CREATE TABLE Files(
-file_name varchar(100) NOT NULL,
-file_path varchar(150) NOT NULL,
+file_name varchar(255) NOT NULL,
+file_path varchar(4096) NOT NULL,
 file_version int DEFAULT 0,
 file_checksum char(32) NOT NULL,
 PRIMARY KEY (file_name, file_version)
 );
-
 
