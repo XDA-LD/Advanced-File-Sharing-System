@@ -15,6 +15,3 @@ A multi-user file-sharing app (client–server) built for a networks course at L
 - Upload, download, and list available files (size + modified timestamp).
 - Per-user server storage directories.
 - **Integrity checks** using MD5 checksums on upload/download (because bit-flips are not a vibe).
-
-## Running
-Setup/run instructions are in `ReadMe.txt` (you’ll need Python, Flask, and a MySQL database).
