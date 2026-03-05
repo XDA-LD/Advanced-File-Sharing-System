@@ -14,4 +14,4 @@ A multi-user file-sharing app (client–server) built for a networks course at L
 - User login + **role-based access control** (admins can delete files + view server logs).
 - Upload, download, and list available files (size + modified timestamp).
 - Per-user server storage directories.
-- **Integrity checks** using MD5 checksums on upload/download (because bit-flips are not a vibe).
+- **Integrity checks** using MD5 checksums on upload/download.
