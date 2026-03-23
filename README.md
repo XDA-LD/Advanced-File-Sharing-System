@@ -4,6 +4,9 @@ A multi-user file-sharing app (client–server) built for a networks course at L
 ![Demo](docs/images/demo.png)
 
 ## High-level architecture
+
+![System Architecture](docs/images/system_architecture.png)
+
 - **Server.py** — Multi-threaded TCP socket server; authenticates users and handles file operations using a custom **length-prefixed messaging** protocol.
 - **db_handler.py** — MySQL abstraction layer storing users (including admin flag) and file metadata (path + checksum).
 - **Client.py** — Reusable client logic for commands + file transfer (shared by different frontends).
@@ -15,3 +18,9 @@ A multi-user file-sharing app (client–server) built for a networks course at L
 - Upload, download, and list available files (size + modified timestamp).
 - Per-user server storage directories.
 - **Integrity checks** using MD5 checksums on upload/download.
+
+## File Upload Flow
+
+![Upload Flow](docs/images/upload_flow.png)
+
+> For the full architecture documentation — including protocol spec, database schema, download/auth flows, and security analysis — see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
