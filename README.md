@@ -19,8 +19,4 @@ A multi-user file-sharing app (client–server) built for a networks course at L
 - Per-user server storage directories.
 - **Integrity checks** using MD5 checksums on upload/download.
 
-## File Upload Flow
-
-![Upload Flow](docs/images/upload_flow.png)
-
-> For the full architecture documentation — including protocol spec, database schema, download/auth flows, and security analysis — see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+> For the full architecture documentation — including protocol spec, database schema, data flows, and security analysis — see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
